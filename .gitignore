@@ -172,3 +172,22 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Am Ende der Datei hinzufügen:
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# FAISS Index (oder wie auch immer dein lokaler Index-Ordner heißt)
+faiss_index_gemma_local/
+# Falls du noch den anderen Index hast:
+# faiss_index_mein_chatbot_local/
+
+# Ollama Modelle (sollten sowieso nicht im Repo sein, aber sicher ist sicher)
+# Normalerweise liegen die unter ~/.ollama/models
+# Es ist unwahrscheinlich, dass sie in deinem Projektordner landen,
+# aber man könnte einen allgemeinen Pattern hinzufügen, falls doch mal etwas lokal gespeichert wird.
+# Fürs Erste ist das wahrscheinlich nicht nötig, da Ollama sie zentral verwaltet.
+
+# Falls du doch mal eine .env Datei für API Keys oder ähnliches anlegst
+.env
