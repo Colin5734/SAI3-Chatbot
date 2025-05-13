@@ -1,6 +1,6 @@
 # SAI3 RAG Chatbot mit Ollama
 
-Dieses Projekt implementiert einen Retrieval-Augmented Generation (RAG) Chatbot in Python. Der Chatbot nutzt eine lokale Textdatei als Wissensbasis und beantwortet Fragen mithilfe des lokal laufenden Sprachmodells `gemma:2b` über Ollama.
+Dieses Projekt implementiert einen Retrieval-Augmented Generation (RAG) Chatbot in Python. Der Chatbot nutzt eine lokale Textdatei als Wissensbasis und beantwortet Fragen mithilfe des lokal laufenden Sprachmodells über Ollama.
 
 **Kerntechnologien:**
 
