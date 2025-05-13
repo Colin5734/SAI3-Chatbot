@@ -15,7 +15,7 @@ Dieses Projekt implementiert einen Retrieval-Augmented Generation (RAG) Chatbot 
 Bevor du beginnst, stelle sicher, dass folgende Software auf deinem System installiert ist:
 
 1.  **Git:** Zur Versionsverwaltung und zum Klonen des Repositories ([git-scm.com](https://git-scm.com/)).
-2.  **Anaconda oder Miniconda:** Zur Verwaltung der Python-Umgebung ([anaconda.com/download](https://anaconda.com/download) oder [docs.conda.io/en/latest/miniconda.html](https://docs.conda.io/en/latest/miniconda.html)).
+2.  **Anaconda:** Zur Verwaltung der Python-Umgebung ([anaconda.com/download](https://anaconda.com/download)).
 3.  **Ollama:** Zum lokalen Ausführen des Sprachmodells ([ollama.ai](https://ollama.ai/)).
 4.  **Ein Ollama LLM:** Lade das spezifische Modell herunter, das dieses Projekt verwendet:
     ```bash
