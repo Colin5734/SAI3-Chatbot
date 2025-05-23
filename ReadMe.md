@@ -6,7 +6,7 @@ Dieses Projekt implementiert einen Retrieval-Augmented Generation (RAG) Chatbot 
 
 - Python
 - LangChain (Framework für LLM-Anwendungen)
-- Ollama (Lokales Ausführen von LLMs wie gemma:2b)
+- Ollama (Lokales Ausführen von LLMs)
 - FAISS (Vektordatenbank für Ähnlichkeitssuche)
 - Sentence Transformers (Erstellung von Text-Embeddings)
 
