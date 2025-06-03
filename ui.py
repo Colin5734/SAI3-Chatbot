@@ -166,23 +166,21 @@ def render_chat_html(history):
 # --------------------------------------------------------------------------------
 # 6. Gradio-Interface aufbauen (mit History-State)
 
-# … (alles wie gehabt, nur dieser Abschnitt ändert sich)
-
 css = """
 /* Verstecke Footer/API-Links */
 footer { display: none !important; }
 .gradio_api { display: none !important; }
 
-/* Submit-Button: grüner Hintergrund, weiße Schrift */
+/* Submit-Button: grüner Hintergrund, fette weiße Schrift */
 #submit-btn {
-    background-color: #28a745 !important;  /* Bootstrap-Grün */
+    background-color: #28a745 !important;
     color: white !important;
     font-weight: bold !important;
 }
 
-/* Cancel-Button: roter Hintergrund, weiße Schrift */
+/* Cancel-Button: roter Hintergrund, fette weiße Schrift */
 #cancel-btn {
-    background-color: #dc3545 !important;  /* Bootstrap-Rot */
+    background-color: #dc3545 !important;
     color: white !important;
     font-weight: bold !important;
 }
@@ -195,51 +193,51 @@ with gr.Blocks(css=css) as demo:
         "It will search the text, retrieve relevant passages, and then answer your question."
     )
 
-    # (A) Anzeige-Element (HTML) für den gesamten Chatverlauf
+    # (A) Anzeige-Element (HTML) für den Chatverlauf
     chat_display = gr.HTML(
         "<div style='color: grey; text-align: center; margin-top: 20px;'>"
         "The chat history will appear here…</div>"
     )
 
-    # (B) Textfeld für die neue Frage (mit Label "Your Question:")
+    # (B) Textbox für die neue Frage (mit Label "Your Question:")
     txt = gr.Textbox(
         placeholder="Type your question here…",
         label="Your Question:",
-        lines=1
+        lines=1,
+        elem_id="txt-input"
     )
 
-    # (C) State-Objekt zum Speichern der History-Liste
+    # (C) History‐State
     state = gr.State([])
 
-    # (D) Submit-Button mit eigenem elem_id
+    # (D) Submit‐Button
     send_btn = gr.Button("Submit", elem_id="submit-btn")
 
-    # (E) Cancel-Button mit eigenem elem_id
+    # (E) Cancel‐Button
     cancel_btn = gr.Button("Cancel", elem_id="cancel-btn")
 
-    # ENTER → chat_with_bot (mit History-State)
+    # ENTER → chat_with_bot (mit „processing“-Anzeige nur im Textfeld)
     txt.submit(
         fn=chat_with_bot,
         inputs=[txt, state],
-        outputs=[chat_display, state, txt]
+        outputs=[chat_display, state, txt],
+        show_progress=[False, False, True]
     )
 
-    # Submit-Button → chat_with_bot (mit History-State)
+    # Submit‐Button → chat_with_bot (mit „processing“-Anzeige nur im Textfeld)
     send_btn.click(
         fn=chat_with_bot,
         inputs=[txt, state],
-        outputs=[chat_display, state, txt]
+        outputs=[chat_display, state, txt],
+        show_progress=[False, False, True]
     )
 
-    # Cancel-Button: Abbruch-Flag setzen + Textfeld leeren
+    # Cancel‐Button setzt Abbruch-Flag und leert das Textfeld
     cancel_btn.click(cancel_request)
     cancel_btn.click(lambda: "", [], [txt])
 
     gr.Markdown("---")
     gr.Markdown("⛔ To stop the app, press CTRL+C in the terminal.")
-
-# … (Rest unverändert)
-
 
 # 7. Gradio-Server starten und Standard-Browser öffnen
 if __name__ == "__main__":

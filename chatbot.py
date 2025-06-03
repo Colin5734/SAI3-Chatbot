@@ -1,3 +1,5 @@
+# chatbot.py
+
 import os
 import warnings
 import sys
@@ -11,7 +13,6 @@ from langchain.prompts import PromptTemplate
 
 warnings.filterwarnings("ignore", category=FutureWarning, module='langchain_community.vectorstores.faiss')
 warnings.filterwarnings("ignore", category=DeprecationWarning, message=".*HuggingFaceEmbeddings.*")
-
 
 DATA_PATH = "Mahabharata_Gita_Light_Edition.txt"  
 VECTORSTORE_PATH = "faiss_index_gemma_local" 
@@ -31,22 +32,21 @@ def load_or_create_vectorstore(data_path, vectorstore_path, embedding_model, bat
         except Exception as e:
             print(f"ERROR loading index: {e}. Attempting to recreate it.")
 
-
     print(f"Creating new vector index from '{data_path}'...")
     if not os.path.exists(data_path):
         print(f"ERROR: Data file '{data_path}' not found!")
         return None
 
     try:
-        loader = TextLoader(data_path, encoding="utf-8") 
+        loader = TextLoader(data_path, encoding="utf-8")
         documents = loader.load()
         print(f"{len(documents)} document(s) loaded from the file.")
         if not documents:
             print("ERROR: No documents loaded. Is the file empty?")
             return None
 
-
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
+        # Chunk-Größe reduziert von 1000 auf 800, Overlap von 150 auf 100
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
         docs = text_splitter.split_documents(documents)
         total_docs = len(docs)
         print(f"{total_docs} text chunks created.")
@@ -58,7 +58,6 @@ def load_or_create_vectorstore(data_path, vectorstore_path, embedding_model, bat
         embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
 
         print(f"Processing {total_docs} chunks in batches of {batch_size}...")
-
         print("Initializing FAISS index with the first batch...")
         first_batch_docs = docs[:batch_size]
         if not first_batch_docs:
@@ -119,18 +118,19 @@ Question: {question}<|end_of_turn|>
 <|start_of_turn|>model
 Answer in English:"""
 
-
     PROMPT = PromptTemplate(
         template=prompt_template, input_variables=["context", "question"]
     )
 
     print("Creating the Retriever...")
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 5}) 
+    # k-Wert reduziert von 5 auf 3
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
     print("Creating the RetrievalQA Chain...")
+    # Wieder zurück zu "stuff", aber k schon reduziert → schneller als vorher
     qa_chain = RetrievalQA.from_chain_type(
         llm=llm,
-        chain_type="stuff", 
+        chain_type="stuff",
         retriever=retriever,
         return_source_documents=True,
         chain_type_kwargs={"prompt": PROMPT}
@@ -145,9 +145,9 @@ if __name__ == "__main__":
 
     if vector_store:
         try:
-             print(f"Number of vectors in the store: {vector_store.index.ntotal}")
+            print(f"Number of vectors in the store: {vector_store.index.ntotal}")
         except AttributeError:
-             print("Could not retrieve exact vector count from loaded index.")
+            print("Could not retrieve exact vector count from loaded index.")
 
         rag_chain = create_rag_chain(vector_store, OLLAMA_MODEL_NAME)
 
@@ -162,7 +162,7 @@ if __name__ == "__main__":
                     print("Exiting chatbot. Goodbye!")
                     break
 
-                if not user_question.strip(): 
+                if not user_question.strip():
                     continue
 
                 print("Thinking...")
@@ -173,12 +173,12 @@ if __name__ == "__main__":
                     print(result["result"])
                     print("-" * 15)
 
-                    show_sources = True 
+                    show_sources = True
                     if show_sources and result.get("source_documents"):
                         print("\n--- Sources Used (Excerpts) ---")
                         for i, doc in enumerate(result["source_documents"]):
                             page_content_oneline = " ".join(doc.page_content.splitlines())
-                            print(f"Source {i+1}: '{page_content_oneline[:300]}...'") 
+                            print(f"Source {i+1}: '{page_content_oneline[:300]}...'")
                         print("-" * 15)
 
                 except Exception as e:
