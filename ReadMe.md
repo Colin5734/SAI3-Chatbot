@@ -229,7 +229,7 @@ python ui.py
 - Beim ersten Start wird der FAISS-Index (falls noch nicht vorhanden) automatisch erstellt.
 - Danach öffnet sich automatisch dein Standard-Browser mit der Adresse http://localhost:7860.
 
-3.  **Ollama Dienst starten:**
+3.  **Im Browser interagieren:**
 
 - Gib deine Frage in das Eingabefeld („Type your question here…“) ein und drücke Enter oder klicke Submit.
 - Die Frage erscheint links (mit User-Avatar), die Antwort rechts (mit Bot-Avatar).
