@@ -95,8 +95,6 @@ Bevor du beginnst, stelle sicher, dass folgende Software auf deinem System insta
     - Die Frage erscheint links (mit User-Avatar), die Antwort rechts (mit Bot-Avatar).
     - Nach Absenden wird das Eingabefeld automatisch geleert.
     - Zum Beenden: Drücke Ctrl + C im Terminal, wo python ui.py läuft.
-    - Wenn "Chatbot ist bereit!" erscheint, kannst du deine Fragen in die Konsole eingeben und mit Enter bestätigen.
-    - Tippe `quit` oder `exit`, um den Chatbot zu beenden.
 
 ## Wissensbasis aktualisieren
 
