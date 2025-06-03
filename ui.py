@@ -1,11 +1,9 @@
-# ui.py
-
 import gradio as gr
 import sys
-import html    # Zum Escapen von Sonderzeichen
-import base64  # Um Bilder in Base64 zu encoden
+import html
+import base64
 from pathlib import Path
-import webbrowser  # Für automatisches Öffnen im Standard‐Browser
+import webbrowser
 
 from chatbot import (
     load_or_create_vectorstore,
@@ -18,7 +16,7 @@ from chatbot import (
 )
 
 # --------------------------------------------------------------------------------
-# 0. AVATAR-BILDER VORAB IN BASE64 EINLESEN (damit keine 404-Fehler auftreten)
+# 0. AVATAR-BILDER PER BASE64 EINLESEN
 
 user_avatar_path = Path("images") / "user_avatar.jpg"
 bot_avatar_path  = Path("images") / "bot_avatar.jpg"
@@ -35,8 +33,7 @@ user_avatar_b64 = encode_image_to_base64(user_avatar_path)
 bot_avatar_b64  = encode_image_to_base64(bot_avatar_path)
 
 if not user_avatar_b64 or not bot_avatar_b64:
-    print("❌ One or both avatar images could not be loaded. Make sure 'images/user_avatar.jpg' "
-          "and 'images/bot_avatar.jpg' exist.")
+    print("❌ Fehlende Avatarbilder: Stelle sicher, dass 'images/user_avatar.jpg' und 'images/bot_avatar.jpg' existieren.")
     sys.exit(1)
 
 # --------------------------------------------------------------------------------
@@ -61,47 +58,71 @@ except Exception as e:
     print(f"✖️ Error initializing RAG chain: {e}")
     sys.exit(1)
 
+# --------------------------------------------------------------------------------
+# 3. GLOBALER ABBRUCH-FLAG
+cancel_flag = False
 
-# 3. Callback-Funktion für den Chat
+def cancel_request():
+    """Wird aufgerufen, wenn der Cancel-Button gedrückt wird."""
+    global cancel_flag
+    cancel_flag = True
+
+# --------------------------------------------------------------------------------
+# 4. Callback-Funktion für den Chat (mit History-State)
+
 def chat_with_bot(user_input, history):
     """
-    user_input: String – the new user question
-    history:    List of {"role": ..., "content": ...} dicts or []/None on first call
+    user_input: String – die neue User-Frage
+    history:    Liste von {"role": ..., "content": ...} oder []/None beim ersten Aufruf
     """
+    global cancel_flag
+
     if history is None:
         history = []
 
-    # LLM aufrufen
+    # LLM-Aufruf (blockierend)
     output = rag_chain.invoke({"query": user_input})
     answer = output["result"]
 
-    # OpenAI-Style-History anreichern
+    # Wenn Cancel während der LLM-Berechnung gedrückt wurde, unterdrücke die echte Antwort:
+    if cancel_flag:
+        # Alte History beibehalten, aber eine "Request canceled."-Nachricht hinzufügen:
+        history.append({"role": "assistant", "content": "❌ Request canceled!"})
+        html_out = render_chat_html(history)
+        cancel_flag = False  # Flag zurücksetzen
+        return html_out, history, ""  # Textfeld zurücksetzen
+
+    # Wenn nicht abgebrochen, erweitern wir die History normal:
     history.append({"role": "user",      "content": user_input})
     history.append({"role": "assistant", "content": answer})
+    html_out = render_chat_html(history)
 
-    # Rückgabe:
-    # 1) HTML-Darstellung
-    # 2) aktualisierte History
-    # 3) leeres String, damit das Textfeld zurückgesetzt wird
-    return render_chat_html(history), history, ""
+    return html_out, history, ""  # Textfeld zurücksetzen
 
+# --------------------------------------------------------------------------------
+# 5. Hilfsfunktion: Aus kompletter History einen HTML-String bauen
 
-# 4. Hilfsfunktion: Aus History einen HTML-String mit ChatGPT-ähnlichem Stil bauen
 def render_chat_html(history):
+    """
+    history: Liste von {"role":"user"/"assistant", "content":...}
+
+    Gibt einen einzigen HTML-String zurück, in dem jede Nachricht in einer
+    dunkelgrauen Sprechblase mit weißem Text dargestellt wird, plus Avatar.
+    """
     html_chunks = []
     for msg in history:
         role    = msg["role"]
         content = html.escape(msg["content"])
 
         if role == "user":
+            # User-Nachricht (links): Avatar links, dunkelgraue Blase
             avatar_uri = f"data:image/jpeg;base64,{user_avatar_b64}"
             html_chunks.append(f"""
                 <div style="
                     display: flex;
-                    align-items: center;   /* Avatar zentriert vertikal */
+                    align-items: center;
                     margin: 6px 0;
                 ">
-                  <!-- User-Icon (64×64) -->
                   <img src="{avatar_uri}" width="64" height="64" style="border-radius:50%;" />
                   <div style="
                       background-color: #444;
@@ -117,11 +138,12 @@ def render_chat_html(history):
                 </div>
             """)
         else:
+            # Bot-Nachricht (rechts): Avatar rechts, dunkelgraue Blase
             avatar_uri = f"data:image/jpeg;base64,{bot_avatar_b64}"
             html_chunks.append(f"""
                 <div style="
                     display: flex;
-                    align-items: center;        /* Avatar zentriert vertikal */
+                    align-items: center;
                     justify-content: flex-end;
                     margin: 6px 0;
                 ">
@@ -136,23 +158,38 @@ def render_chat_html(history):
                   ">
                     {content}
                   </div>
-                  <!-- Bot-Icon jetzt auch 64×64 -->
                   <img src="{avatar_uri}" width="64" height="64" style="border-radius:50%;" />
                 </div>
             """)
     return "<div style='font-family: sans-serif;'>" + "\n".join(html_chunks) + "</div>"
 
+# --------------------------------------------------------------------------------
+# 6. Gradio-Interface aufbauen (mit History-State)
 
+# … (alles wie gehabt, nur dieser Abschnitt ändert sich)
 
-# 5. Gradio-Interface aufbauen
 css = """
-/* Fußzeile, API-Leiste und Einstellungs-Icon ausblenden */
+/* Verstecke Footer/API-Links */
 footer { display: none !important; }
 .gradio_api { display: none !important; }
+
+/* Submit-Button: grüner Hintergrund, weiße Schrift */
+#submit-btn {
+    background-color: #28a745 !important;  /* Bootstrap-Grün */
+    color: white !important;
+    font-weight: bold !important;
+}
+
+/* Cancel-Button: roter Hintergrund, weiße Schrift */
+#cancel-btn {
+    background-color: #dc3545 !important;  /* Bootstrap-Rot */
+    color: white !important;
+    font-weight: bold !important;
+}
 """
 
 with gr.Blocks(css=css) as demo:
-    gr.Markdown("# 🌸 Mahabharata-Gita RAG-Chatbot")
+    gr.Markdown("# 📖 Mahabharata-Gita RAG-Chatbot")
     gr.Markdown(
         "Ask the chatbot a question about the Bhagavad Gita. "
         "It will search the text, retrieve relevant passages, and then answer your question."
@@ -164,7 +201,7 @@ with gr.Blocks(css=css) as demo:
         "The chat history will appear here…</div>"
     )
 
-    # (B) Textfeld für die neue Frage
+    # (B) Textfeld für die neue Frage (mit Label "Your Question:")
     txt = gr.Textbox(
         placeholder="Type your question here…",
         label="Your Question:",
@@ -174,23 +211,38 @@ with gr.Blocks(css=css) as demo:
     # (C) State-Objekt zum Speichern der History-Liste
     state = gr.State([])
 
-    # ENTER oder Button → chat_with_bot aufrufen
-    # Hinweis: Wir geben drei Outputs zurück (chat_display, state, txt), damit
-    # das Textfeld nach Absenden geleert wird.
-    txt.submit(chat_with_bot, inputs=[txt, state], outputs=[chat_display, state, txt])
-    send_btn = gr.Button("Submit")
-    send_btn.click(chat_with_bot, inputs=[txt, state], outputs=[chat_display, state, txt])
+    # (D) Submit-Button mit eigenem elem_id
+    send_btn = gr.Button("Submit", elem_id="submit-btn")
+
+    # (E) Cancel-Button mit eigenem elem_id
+    cancel_btn = gr.Button("Cancel", elem_id="cancel-btn")
+
+    # ENTER → chat_with_bot (mit History-State)
+    txt.submit(
+        fn=chat_with_bot,
+        inputs=[txt, state],
+        outputs=[chat_display, state, txt]
+    )
+
+    # Submit-Button → chat_with_bot (mit History-State)
+    send_btn.click(
+        fn=chat_with_bot,
+        inputs=[txt, state],
+        outputs=[chat_display, state, txt]
+    )
+
+    # Cancel-Button: Abbruch-Flag setzen + Textfeld leeren
+    cancel_btn.click(cancel_request)
+    cancel_btn.click(lambda: "", [], [txt])
 
     gr.Markdown("---")
-    gr.Markdown("🛑 To stop the app, press CTRL+C in the terminal.")
+    gr.Markdown("⛔ To stop the app, press CTRL+C in the terminal.")
 
-# 6. Gradio-Server starten und Standard-Browser öffnen
+# … (Rest unverändert)
+
+
+# 7. Gradio-Server starten und Standard-Browser öffnen
 if __name__ == "__main__":
     demo.queue()
-
-    # Kurze Verzögerung, damit der Server initialisiert ist (optional)
-    # webbrowser.open ruft das System‐Default auf (Chrome, Brave oder jeder andere),
-    # je nachdem, was aktuell als Standard‐Browser eingestellt ist.
     webbrowser.open("http://localhost:7860")
-
     demo.launch(server_name="0.0.0.0", server_port=7860)
