@@ -69,13 +69,20 @@ def cancel_request():
 
 # --------------------------------------------------------------------------------
 # 4. Callback-Funktion für den Chat (mit History-State)
-
 def chat_with_bot(user_input, history):
     """
     user_input: String – die neue User-Frage
     history:    Liste von {"role": ..., "content": ...} oder []/None beim ersten Aufruf
     """
     global cancel_flag
+
+    # ─── Abbruch bei leerem Input ───────────────────────────────────────────────────
+    # Wenn user_input nur aus Leerzeichen (oder komplett leer) besteht, 
+    # gib History unverändert zurück und verhindere jede Verarbeitung.
+    if not user_input or not user_input.strip():
+        # history bleibt gleich, html_out bleibt gleich
+        return render_chat_html(history), history, ""
+    # ────────────────────────────────────────────────────────────────────────────────
 
     if history is None:
         history = []
@@ -86,7 +93,7 @@ def chat_with_bot(user_input, history):
 
     # Wenn Cancel während der LLM-Berechnung gedrückt wurde, unterdrücke die echte Antwort:
     if cancel_flag:
-        # Alte History beibehalten, aber eine "Request canceled."-Nachricht hinzufügen:
+        # Alte History beibehalten, aber eine "Request canceled!"-Nachricht hinzufügen:
         history.append({"role": "assistant", "content": "❌ Request canceled!"})
         html_out = render_chat_html(history)
         cancel_flag = False  # Flag zurücksetzen
@@ -98,6 +105,8 @@ def chat_with_bot(user_input, history):
     html_out = render_chat_html(history)
 
     return html_out, history, ""  # Textfeld zurücksetzen
+
+
 
 # --------------------------------------------------------------------------------
 # 5. Hilfsfunktion: Aus kompletter History einen HTML-String bauen
@@ -178,11 +187,21 @@ footer { display: none !important; }
     font-weight: bold !important;
 }
 
+/* Hover-Effekt für Submit: etwas dunkleres Grün */
+#submit-btn:hover {
+    background-color: #1e7e34 !important;
+}
+
 /* Cancel-Button: roter Hintergrund, fette weiße Schrift */
 #cancel-btn {
     background-color: #dc3545 !important;
     color: white !important;
     font-weight: bold !important;
+}
+
+/* Hover-Effekt für Cancel: etwas dunkleres Rot */
+#cancel-btn:hover {
+    background-color: #c82333 !important;
 }
 """
 
@@ -212,7 +231,13 @@ with gr.Blocks(css=css) as demo:
     state = gr.State([])
 
     # (D) Submit‐Button
-    send_btn = gr.Button("Submit", elem_id="submit-btn")
+    send_btn = gr.Button("Submit", elem_id="submit-btn", interactive=False)
+
+    txt.change(
+    fn=lambda value: gr.update(interactive=bool(len(value.strip()))),
+    inputs=[txt],
+    outputs=[send_btn]
+)
 
     # (E) Cancel‐Button
     cancel_btn = gr.Button("Cancel", elem_id="cancel-btn")
