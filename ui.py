@@ -4,7 +4,6 @@ import html
 import base64
 from pathlib import Path
 import webbrowser
-# import time # Aus Code B, aber nicht aktiv genutzt in der Logik, kann weg, wenn nicht benötigt
 
 from chatbot import (
     load_or_create_vectorstore,
@@ -64,7 +63,7 @@ except Exception as e:
     print(f"✖️ Error initializing RAG chain: {e}"); sys.exit(1)
 
 # --------------------------------------------------------------------------------
-# 3. GLOBALER ABBRUCH-FLAG (aus Code A)
+# 3. GLOBALER ABBRUCH-FLAG 
 cancel_flag = False
 
 def cancel_request():
@@ -74,7 +73,7 @@ def cancel_request():
     cancel_flag = True
 
 # --------------------------------------------------------------------------------
-# 4. Callback-Funktion für den Chat (Kombination aus A und B)
+# 4. Callback-Funktion für den Chat 
 def chat_with_bot(user_input, history):
     """
     user_input: String – die neue User-Frage
@@ -84,55 +83,55 @@ def chat_with_bot(user_input, history):
     global cancel_flag
 
     if not user_input or not user_input.strip():
-        yield render_chat_html(history or []), history or [], "" # Leeren Input abfangen
+        yield render_chat_html(history or []), history or [], "" 
         return
 
     if history is None:
         history = []
 
     history.append({"role": "user", "content": user_input})
-    history.append({"role": "assistant", "content": "...", "thinking": True}) # "Thinking" Nachricht
-    yield render_chat_html(history), history, "" # UI updaten, Eingabefeld leeren
+    history.append({"role": "assistant", "content": "...", "thinking": True}) 
+    yield render_chat_html(history), history, "" 
 
-    # Prüfen, ob vor dem LLM-Aufruf abgebrochen wurde
+   
     if cancel_flag:
-        history.pop() # "Thinking" Nachricht entfernen
+        history.pop() 
         history.append({"role": "assistant", "content": "❌ Request canceled by user before processing."})
         html_out = render_chat_html(history)
-        cancel_flag = False  # Flag zurücksetzen
+        cancel_flag = False  
         yield html_out, history, ""
         return
 
     try:
-        # LLM-Aufruf (blockierend)
+       
         output = rag_chain.invoke({"query": user_input})
         answer = output["result"]
 
-        # Prüfen, ob WÄHREND des LLM-Aufrufs abgebrochen wurde
+        
         if cancel_flag:
-            history.pop() # "Thinking" Nachricht entfernen
+            history.pop() 
             history.append({"role": "assistant", "content": "❌ Request canceled by user during processing."})
             html_out = render_chat_html(history)
-            cancel_flag = False  # Flag zurücksetzen
+            cancel_flag = False  
             yield html_out, history, ""
             return
 
     except Exception as e:
         print(f"✖️ Error invoking RAG chain: {e}")
         answer = "Sorry, I encountered an error processing your request."
-        # Auch hier prüfen, falls der Fehler durch Cancel kam (unwahrscheinlich, aber sicher ist sicher)
+       
         if cancel_flag:
-            history.pop() # "Thinking" Nachricht entfernen
+            history.pop() 
             history.append({"role": "assistant", "content": "❌ Request canceled by user (error during processing)."})
             html_out = render_chat_html(history)
             cancel_flag = False
             yield html_out, history, ""
             return
 
-    history.pop() # "Thinking" Nachricht entfernen
+    history.pop() 
     history.append({"role": "assistant", "content": answer})
     html_out = render_chat_html(history)
-    yield html_out, history, "" # Finale Antwort, Eingabefeld bleibt leer (war schon)
+    yield html_out, history, "" 
 
 # --------------------------------------------------------------------------------
 # 5. Hilfsfunktion: HTML für Chat (aus Code B)
@@ -142,7 +141,6 @@ def render_chat_html(history):
     html_chunks = []
     for msg in history:
         role = msg["role"]
-        # Sanitize content and replace newlines for HTML
         content = html.escape(msg.get("content", "")).replace("\n", "<br>")
         is_thinking = msg.get("thinking", False)
 
@@ -154,7 +152,7 @@ def render_chat_html(history):
                     {content}
                   </div>
                 </div>""")
-        else: # assistant
+        else: 
             if is_thinking:
                 bubble_content = """
                     <div class="typing-indicator">
@@ -178,7 +176,7 @@ def render_chat_html(history):
     return "<div class='chat-messages-container' id='chat-messages-container-id'>" + "\n".join(html_chunks) + "</div>"
 
 # --------------------------------------------------------------------------------
-# 6. Gradio-Interface (Basis Code B, mit Anpassungen)
+# 6. Gradio-Interface 
 
 chat_ui_css = """
 /* CSS aus Code B, erweitert für Cancel-Button */
@@ -371,74 +369,72 @@ with gr.Blocks(css=chat_ui_css, title="Mahabharata-Gita RAG-Chatbot") as demo:
             gr.Markdown("<h1>🌸 Mahabharata-Gita RAG-Chatbot</h1>")
             gr.Markdown("<p>Ask me anything about the Gita. I'll search the text, retrieve relevant passages, and then answer your question.</p>")
 
-        # Wichtig: Den äußeren Container scrollbar machen, nicht das HTML-Element selbst
+  
         with gr.Column(elem_id="chat-display-outer-container"):
             chat_display_html_component = gr.HTML(
-                render_chat_html([]), # Initial leerer Chat
-                elem_id="chat-display-scroll-area" # ID für den Inhalt, falls JS darauf zugreifen muss
+                render_chat_html([]), 
+                elem_id="chat-display-scroll-area" 
             )
 
         with gr.Column(elem_id="input-area-wrapper"):
-            with gr.Row(elem_id="input-row", equal_height=False): # equal_height=False kann helfen bei unterschiedlichen Button-Inhalten
+            with gr.Row(elem_id="input-row", equal_height=False): 
                 txt_input = gr.Textbox(
                     show_label=False,
                     placeholder="Type your question...",
                     lines=1,
-                    max_lines=5, # Erlaubt mehrzeilige Eingabe bis zu 5 Zeilen
-                    container=False, # Wichtig für korrekte Integration in Row mit CSS
-                    autofocus=True,  # Aus Code A übernommen
-                    scale=18 # Gibt der Textbox mehr relativen Platz in der Row
+                    max_lines=5, 
+                    container=False, 
+                    autofocus=True, 
+                    scale=18 
                 )
                 send_btn = gr.Button(
                     "Send",
-                    # variant="primary", # primary kann mit eigenem CSS kollidieren
-                    elem_id="send-btn", # Für spezifisches CSS-Styling
-                    scale=0.2, # Weniger Platz als Textbox
-                    interactive=False # Startet deaktiviert (aus Code A Logik)
+                   
+                    elem_id="send-btn", 
+                    scale=0.2, 
+                    interactive=False 
                 )
-                cancel_btn = gr.Button( # Hinzugefügter Cancel-Button
+                cancel_btn = gr.Button( 
                     "Cancel",
-                    elem_id="cancel-btn", # Für spezifisches CSS-Styling
-                    scale=0.1 # Weniger Platz als Textbox
+                    elem_id="cancel-btn",
+                    scale=0.1 
                 )
 
         with gr.Column(elem_id="footer-ctrl-c-info"):
              gr.Markdown("<div>🛑 To stop the app, press CTRL+C in the terminal.</div>")
 
 
-    chat_state = gr.State([]) # State für den Chatverlauf
+    chat_state = gr.State([])
 
-    # Event-Handler
-    # Aktivieren/Deaktivieren des Send-Buttons basierend auf Input (aus Code A)
+
     txt_input.change(
         fn=lambda value: gr.update(interactive=bool(value and value.strip())),
         inputs=[txt_input],
         outputs=[send_btn]
     )
 
-    # Enter im Textfeld löst Chat aus
+
     txt_input.submit(
         fn=chat_with_bot,
         inputs=[txt_input, chat_state],
         outputs=[chat_display_html_component, chat_state, txt_input],
-        # show_progress="hidden" # Gradio-eigene Progress Bar ggf. ausblenden
+
     )
 
-    # Klick auf Send-Button löst Chat aus
     send_btn.click(
         fn=chat_with_bot,
         inputs=[txt_input, chat_state],
         outputs=[chat_display_html_component, chat_state, txt_input],
-        # show_progress="hidden"
+
     )
 
-    # Klick auf Cancel-Button
+
     cancel_btn.click(
         fn=cancel_request,
         inputs=None,
         outputs=None
     )
-    cancel_btn.click( # Leert auch das Textfeld nach Cancel
+    cancel_btn.click( 
         fn=lambda: "",
         inputs=None,
         outputs=[txt_input]
@@ -448,20 +444,20 @@ with gr.Blocks(css=chat_ui_css, title="Mahabharata-Gita RAG-Chatbot") as demo:
 # 7. Gradio-Server starten
 if __name__ == "__main__":
     print("ℹ️ Starting Gradio app...")
-    demo.queue() # Wichtig für nebenläufige Anfragen / Streaming-ähnliches Verhalten
+    demo.queue()
     
-    # Automatisches Öffnen im Browser mit besserem Fehlerhandling (aus Code B)
+    local_url = f"http://127.0.0.1:7860" 
+    
+    print(f"✅ Gradio app will be running at {local_url} or http://0.0.0.0:7860")
+    
     try:
-        # Standardmäßig öffnet Gradio selbst, aber explizit ist auch ok
-        # webbrowser.open("http://127.0.0.1:7860") # Gradio macht das meist von allein
-        print("✅ Gradio app will be running at http://127.0.0.1:7860 or http://0.0.0.0:7860")
-        print("   Gradio usually opens the app in your browser automatically.")
+        webbrowser.open(local_url)
+        print("   Attempting to open in browser...")
     except Exception as e:
-        print(f"⚠️ Could not open browser automatically: {e}. Please open http://127.0.0.1:7860 manually.")
+        print(f"⚠️ Could not open browser automatically: {e}. Please open {local_url} manually.")
     
     demo.launch(
-        server_name="0.0.0.0", # Erreichbar im lokalen Netzwerk
+        server_name="0.0.0.0",
         server_port=7860,
-        favicon_path="images/Mahabharata_Favicon.png" # Aus Code A
-        # share=True # Wenn du es öffentlich teilen willst (ngrok)
+        favicon_path="images/Mahabharata_Favicon.png"
     )
