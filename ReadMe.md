@@ -1,9 +1,5 @@
 ## Group A
-Luca Lüdi
-Colin Marti
-Hristian Petrov
-Cyril Schlup
-Sriprakatheeswaran Thiraviyachelvam
+Luca Lüdi, Colin Marti, Hristian Petrov, Cyril Schlup, Sriprakatheeswaran Thiraviyachelvam
 
 # SAI3 RAG Chatbot with Ollama
 
