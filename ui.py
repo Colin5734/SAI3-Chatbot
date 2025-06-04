@@ -195,7 +195,7 @@ with gr.Blocks(css=css) as demo:
 
     # (A) Anzeige-Element (HTML) für den Chatverlauf
     chat_display = gr.HTML(
-        "<div style='color: grey; text-align: center; margin-top: 20px;'>"
+        "<div style='color: #888; text-align: center; margin-top: 20px; font-weight: bold !important;'>"
         "The chat history will appear here…</div>"
     )
 
@@ -204,7 +204,8 @@ with gr.Blocks(css=css) as demo:
         placeholder="Type your question here…",
         label="Your Question:",
         lines=1,
-        elem_id="txt-input"
+        elem_id="txt-input",
+        autofocus=True
     )
 
     # (C) History‐State
@@ -243,4 +244,9 @@ with gr.Blocks(css=css) as demo:
 if __name__ == "__main__":
     demo.queue()
     webbrowser.open("http://localhost:7860")
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    
+    demo.launch(
+        server_name="0.0.0.0",
+        server_port=7860,
+        favicon_path="images/Mahabharata_Favicon.png"
+    )
