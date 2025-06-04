@@ -137,7 +137,13 @@ def chat_with_bot(user_input, history):
 # 5. Hilfsfunktion: HTML für Chat (aus Code B)
 def render_chat_html(history):
     if not history:
-        return "<div class='empty-chat-message'>Ask me anything about the Gita...</div>"
+        return (
+    "<div class='empty-chat-message' "
+    "style='font-size:1.2em; font-weight:bold;'>"
+    "Ask me anything about the Gita..."
+    "</div>"
+)
+
     html_chunks = []
     for msg in history:
         role = msg["role"]
@@ -199,8 +205,8 @@ html, body {
 
 .gradio-container > footer,
 .gradio-container > .header,
-.gradio_api {
-    display: none !important;
+footer { display: none !important; }
+.gradio_api { display: none !important; }
 }
 
 #chat-interface-wrapper {
@@ -241,18 +247,19 @@ html, body {
 
 .chat-message { display: flex; align-items: flex-end; margin-bottom: 20px; max-width: 100%; }
 .avatar {
-    width: 36px !important; height: 36px !important;
-    min-width: 36px !important; min-height: 36px !important;
+    width: 48px !important; height: 48px !important;
+    min-width: 48px !important; min-height: 48px !important;
     border-radius: 50%; object-fit: cover;
     border: 1px solid #444; flex-shrink: 0;
 }
 .message-bubble {
-    padding: 12px 18px;
+    padding: 16px 24px;
     border-radius: 18px;
     line-height: 1.6;
-    max-width: 75%;
+    max-width: 80%;
     word-wrap: break-word;
     box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+    font-size: 1.05em;
 }
 .user-message { justify-content: flex-start; }
 .user-message .avatar { margin-right: 12px; }
@@ -293,9 +300,9 @@ html, body {
 #input-area-wrapper textarea {
     background-color: #2c2c2e !important; color: #e0e0e0 !important;
     border: 1px solid #444 !important; border-radius: 22px !important;
-    padding: 10px 18px !important; /* Angepasst für Höhe */
+    padding: 14px 18px !important; /* Angepasst für Höhe */
     box-shadow: none !important;
-    min-height: 24px !important; /* Mindesthöhe für eine Zeile */
+    min-height: 36px !important; /* Mindesthöhe für eine Zeile */
     line-height: 1.5;
     flex-grow: 1;
     overflow-y: hidden; /* Verhindert Scrollbar, wenn max_lines nicht erreicht */
@@ -366,8 +373,29 @@ html, body {
 with gr.Blocks(css=chat_ui_css, title="Mahabharata-Gita RAG-Chatbot") as demo:
     with gr.Column(elem_id="chat-interface-wrapper"):
         with gr.Column(elem_id="header-area"):
-            gr.Markdown("<h1>🌸 Mahabharata-Gita RAG-Chatbot</h1>")
-            gr.Markdown("<p>Ask me anything about the Gita. I'll search the text, retrieve relevant passages, and then answer your question.</p>")
+            # Titel: größer, fetter und mit kleinem Abstand nach unten
+            gr.Markdown(
+                "<h1 style='"
+                "font-size:2em; "       # Schriftgröße anpassen
+                "font-weight:bold; "    # fett
+                "margin-bottom:0.3em;"  # etwas Abstand nach unten
+                "'>"
+                "📖 Mahabharata-Gita RAG-Chatbot"
+                "</h1>"
+            )
+
+            # Untertext: etwas größer/fetter und mit kleinem Abstand nach oben
+            gr.Markdown(
+                "<p style='"
+                "font-size:1.3em; "     # Schriftgröße anpassen
+                "font-weight:bold; "    # fett
+                "margin-top:0.3em; "    # Abstand nach oben verkleinern
+                "margin-bottom:0.5em;"  # (optional) etwas Abstand nach unten
+                "'>"
+                "Ask me anything about the Gita. I'll search the text, retrieve "
+                "relevant passages, and then answer your question."
+                "</p>"
+            )
 
   
         with gr.Column(elem_id="chat-display-outer-container"):
@@ -401,7 +429,7 @@ with gr.Blocks(css=chat_ui_css, title="Mahabharata-Gita RAG-Chatbot") as demo:
                 )
 
         with gr.Column(elem_id="footer-ctrl-c-info"):
-             gr.Markdown("<div>🛑 To stop the app, press CTRL+C in the terminal.</div>")
+             gr.Markdown("<div>⛔ To stop the app, press CTRL+C in the terminal.</div>")
 
 
     chat_state = gr.State([])
