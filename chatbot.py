@@ -1,5 +1,3 @@
-# chatbot.py
-
 import os
 import warnings
 import sys
@@ -45,7 +43,7 @@ def load_or_create_vectorstore(data_path, vectorstore_path, embedding_model, bat
             print("ERROR: No documents loaded. Is the file empty?")
             return None
 
-        # Chunk-Größe reduziert von 1000 auf 800, Overlap von 150 auf 100
+        # Chunk-Grösse & Overlap
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
         docs = text_splitter.split_documents(documents)
         total_docs = len(docs)
@@ -123,11 +121,10 @@ Answer in English:"""
     )
 
     print("Creating the Retriever...")
-    # k-Wert reduziert von 5 auf 3
+    # K-Wert
     retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
     print("Creating the RetrievalQA Chain...")
-    # Wieder zurück zu "stuff", aber k schon reduziert → schneller als vorher
     qa_chain = RetrievalQA.from_chain_type(
         llm=llm,
         chain_type="stuff",

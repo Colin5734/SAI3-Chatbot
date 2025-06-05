@@ -15,8 +15,7 @@ from chatbot import (
     INDEX_BATCH_SIZE
 )
 
-# --------------------------------------------------------------------------------
-# 0. AVATAR-BILDER PER BASE64 EINLESEN (aus Code B, verbessert)
+# Avatar-Bilder Per BASE64 Einlesen
 user_avatar_path = Path("images") / "user_avatar.jpg"
 bot_avatar_path  = Path("images") / "bot_avatar.jpg"
 
@@ -24,9 +23,9 @@ def encode_image_to_base64(path: Path) -> str:
     """Liest eine Bilddatei ein und gibt sie als Base64-String mit MIME-Typ zurück, oder Fallback-SVG."""
     if not path.exists():
         print(f"⚠️ Avatar file not found: {path}. Using fallback SVG.")
-        if "user" in str(path).lower(): # Unterscheidung für Fallback
+        if "user" in str(path).lower():
             return "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjY2ZjZmNmIiBzdHJva2U9IiNjZmNmY2YiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xOCAyMHYtMS44YzAtMS43LTEuMi0zLjItMy0zLjJoLTYtMS44IDAtMy4yIDEuMy0zLjIgMy4yVjIwIi8+PGNpcmNsZSBjeD0iMTIiIGN5PSI4IiByPSI0Ii8+PC9zdmc+"
-        else: # Bot oder generisch
+        else:
             return "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjY2ZjZmNmIiBzdHJva2U9IiNjZmNmY2YiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik00IDdoM2EyIDIgMCAwIDEgMiAydjRjMCAxLjEtLjkgMi0yIDJINGEyIDIgMCAwIDEtMi0yVjFhMiAyIDAgMCAxIDItMmg0Ii8+PHBhdGggZD0ibTEyIDEyIDEgNSIvPjxyZWN0IHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgeD0iOSIgeT0iNyIgcnk9IjIiLz48cGF0aCBkPSJtOCA0IDEuNSAxLjVMOCAxMCIvPjxwYXRoIGQ9Im0xNiA0LTEuNSAxLjVMMTYgMTAiLz48L3N2Zz4="
     try:
         data = path.read_bytes()
@@ -38,7 +37,7 @@ def encode_image_to_base64(path: Path) -> str:
         return f"data:{mime_type};base64,{base64_encoded_data}"
     except Exception as e:
         print(f"❌ Error encoding image {path}: {e}. Using fallback SVG.")
-        # Fallback basierend auf Dateinamensteil (redundant zum obigen Check, aber sicherer)
+        # Fallback basierend auf Dateinamensteil
         if "user" in str(path).lower():
             return "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjY2ZjZmNmIiBzdHJva2U9IiNjZmNmY2YiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xOCAyMHYtMS44YzAtMS43LTEuMi0zLjItMy0zLjJoLTYtMS44IDAtMy4yIDEuMy0zLjIgMy4yVjIwIi8+PGNpcmNsZSBjeD0iMTIiIGN5PSI4IiByPSI0Ii8+PC9zdmc+"
         else:
@@ -47,23 +46,21 @@ def encode_image_to_base64(path: Path) -> str:
 user_avatar_uri = encode_image_to_base64(user_avatar_path)
 bot_avatar_uri  = encode_image_to_base64(bot_avatar_path)
 
-# --------------------------------------------------------------------------------
-# 1. FAISS-Index laden oder neu erstellen
+# FAISS-Index laden oder neu erstellen
 print("ℹ️ Loading or creating the FAISS index …")
 try:
     vectorstore = load_or_create_vectorstore(DATA_PATH, VECTORSTORE_PATH, EMBEDDING_MODEL_NAME, INDEX_BATCH_SIZE)
 except Exception as e:
     print(f"✖️ Error loading/creating vectorstore: {e}"); sys.exit(1)
 
-# 2. RAG-Chain initialisieren
+# RAG-Chain initialisieren
 print("ℹ️ Initializing the RAG chain …")
 try:
     rag_chain = create_rag_chain(vectorstore, OLLAMA_MODEL_NAME)
 except Exception as e:
     print(f"✖️ Error initializing RAG chain: {e}"); sys.exit(1)
 
-# --------------------------------------------------------------------------------
-# 3. GLOBALER ABBRUCH-FLAG 
+# Globaler Abbruch-Flag 
 cancel_flag = False
 
 def cancel_request():
@@ -72,8 +69,7 @@ def cancel_request():
     print("ℹ️ Cancel request received.")
     cancel_flag = True
 
-# --------------------------------------------------------------------------------
-# 4. Callback-Funktion für den Chat 
+# Callback-Funktion für den Chat 
 def chat_with_bot(user_input, history):
     """
     user_input: String – die neue User-Frage
@@ -133,8 +129,7 @@ def chat_with_bot(user_input, history):
     html_out = render_chat_html(history)
     yield html_out, history, "" 
 
-# --------------------------------------------------------------------------------
-# 5. Hilfsfunktion: HTML für Chat (aus Code B)
+# Hilfsfunktion: HTML für Chat
 def render_chat_html(history):
     if not history:
         return (
@@ -181,11 +176,9 @@ def render_chat_html(history):
                     </div>""")
     return "<div class='chat-messages-container' id='chat-messages-container-id'>" + "\n".join(html_chunks) + "</div>"
 
-# --------------------------------------------------------------------------------
-# 6. Gradio-Interface 
 
+# Gradio-Interface 
 chat_ui_css = """
-/* CSS aus Code B, erweitert für Cancel-Button */
 html, body {
     margin: 0;
     padding: 0;
@@ -232,13 +225,13 @@ footer { display: none !important; }
 
 #chat-display-outer-container {
     flex-grow: 1;
-    min-height: 50px; /* Mindesthöhe für den Chat-Anzeigebereich */
+    min-height: 50px;
     padding: 20px 25px;
     background-color: #1e1e1e;
-    overflow-y: auto; /* Wichtig, damit der Chat scrollbar wird */
+    overflow-y: auto;
 }
 
-#chat-display-scroll-area { /* Dieser ID ist für den HTML-Inhalt, nicht den Container */
+#chat-display-scroll-area {
     width: 100%;
 }
 
@@ -284,47 +277,46 @@ footer { display: none !important; }
     background-color: #252525;
     flex-shrink: 0;
 }
-#input-row, #input-area-wrapper .gr-row { /* Gilt für die Zeile mit Textbox und Buttons */
+#input-row, #input-area-wrapper .gr-row { 
     align-items: flex-end !important;
     gap: 10px !important;
 }
-/* Styling für Textbox-Container (damit er wächst) */
-#input-row > div:first-child, /* Gradio umschließt Textbox oft mit einem div */
-#input-row > span:first-child > div, /* Manchmal auch so */
-#input-row .gr-form { /* Generischer Fallback für den Textbox-Wrapper */
+
+#input-row > div:first-child, 
+#input-row > span:first-child > div, 
+#input-row .gr-form { 
     border: none !important; padding: 0 !important; margin: 0 !important;
     box-shadow: none !important; background-color: transparent !important;
-    display: flex !important; /* Wichtig für Flex-Grow */
-    flex-grow: 1 !important; /* Lässt Textbox den verfügbaren Platz einnehmen */
+    display: flex !important;
+    flex-grow: 1 !important; 
 }
 #input-area-wrapper textarea {
     background-color: #2c2c2e !important; color: #e0e0e0 !important;
     border: 1px solid #444 !important; border-radius: 22px !important;
-    padding: 14px 18px !important; /* Angepasst für Höhe */
+    padding: 14px 18px !important; 
     box-shadow: none !important;
-    min-height: 36px !important; /* Mindesthöhe für eine Zeile */
+    min-height: 36px !important; 
     line-height: 1.5;
     flex-grow: 1;
-    overflow-y: hidden; /* Verhindert Scrollbar, wenn max_lines nicht erreicht */
+    overflow-y: hidden; 
 }
 #input-area-wrapper textarea::placeholder { color: #777 !important; }
 
-/* Basis-Button-Styling (wird von Send und Cancel geerbt/überschrieben) */
+
 #input-area-wrapper button.gr-button {
-    min-width: auto !important; /* Erlaubt kleinere Buttons */
+    min-width: auto !important;
     padding: 0px 15px !important;
-    height: 46px !important; /* Gleiche Höhe wie Textarea mit Padding */
+    height: 46px !important; 
     border-radius: 22px !important;
     border: none !important;
     font-weight: 500;
     transition: background-color 0.2s ease;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    flex-shrink: 0; /* Verhindert, dass Buttons schrumpfen */
-    align-self: flex-end; /* Am unteren Rand der Row ausrichten */
+    flex-shrink: 0; 
+    align-self: flex-end; 
 }
 
-/* Send-Button (spezifisch aus Code B) */
-#send-btn { /* elem_id für den Send-Button */
+#send-btn {
     background-color: #6A65D7 !important;
     color: white !important;
 }
@@ -332,17 +324,15 @@ footer { display: none !important; }
     background-color: #534FBF !important;
 }
 
-/* Cancel-Button (Stile aus Code A, angepasst) */
-#cancel-btn { /* elem_id für den Cancel-Button */
+#cancel-btn {
     background-color: #dc3545 !important;
     color: white !important;
-    font-weight: bold !important; /* Beibehalten, wenn gewünscht */
+    font-weight: bold !important;
 }
 #cancel-btn:hover {
     background-color: #c82333 !important;
 }
 
-/* Aktiv/Inaktiv Styling für Send-Button (optional, wenn txt.change verwendet wird) */
 #send-btn:disabled {
     background-color: #4a4a50 !important;
     cursor: not-allowed !important;
@@ -360,7 +350,6 @@ footer { display: none !important; }
 }
 #footer-ctrl-c-info div { padding: 0; margin: 0; }
 
-/* Verstecke Gradio-Fortschrittsanzeigen, da wir eigene "Thinking"-Bubble haben */
 .gradio-container .generating,
 .gradio-container .status-tracker,
 .gradio-container .progress-bar,
@@ -373,31 +362,28 @@ footer { display: none !important; }
 with gr.Blocks(css=chat_ui_css, title="Mahabharata-Gita RAG-Chatbot") as demo:
     with gr.Column(elem_id="chat-interface-wrapper"):
         with gr.Column(elem_id="header-area"):
-            # Titel: größer, fetter und mit kleinem Abstand nach unten
             gr.Markdown(
                 "<h1 style='"
-                "font-size:2em; "       # Schriftgröße anpassen
-                "font-weight:bold; "    # fett
-                "margin-bottom:0.3em;"  # etwas Abstand nach unten
+                "font-size:2em; "       
+                "font-weight:bold; "    
+                "margin-bottom:0.3em;"  
                 "'>"
                 "📖 Mahabharata-Gita RAG-Chatbot"
                 "</h1>"
             )
 
-            # Untertext: etwas größer/fetter und mit kleinem Abstand nach oben
             gr.Markdown(
                 "<p style='"
-                "font-size:1.3em; "     # Schriftgröße anpassen
-                "font-weight:bold; "    # fett
-                "margin-top:0.3em; "    # Abstand nach oben verkleinern
-                "margin-bottom:0.5em;"  # (optional) etwas Abstand nach unten
+                "font-size:1.3em; "     
+                "font-weight:bold; "    
+                "margin-top:0.3em; "    
+                "margin-bottom:0.5em;"  
                 "'>"
                 "Ask me anything about the Gita. I'll search the text, retrieve "
                 "relevant passages, and then answer your question."
                 "</p>"
             )
-
-  
+ 
         with gr.Column(elem_id="chat-display-outer-container"):
             chat_display_html_component = gr.HTML(
                 render_chat_html([]), 
@@ -469,7 +455,7 @@ with gr.Blocks(css=chat_ui_css, title="Mahabharata-Gita RAG-Chatbot") as demo:
     )
 
 
-# 7. Gradio-Server starten
+# Gradio-Server starten
 if __name__ == "__main__":
     print("ℹ️ Starting Gradio app...")
     demo.queue()
