@@ -64,17 +64,20 @@ Before you begin, ensure the following software is installed on your system:
 
 5.  **Install Dependencies:**
     Install all necessary Python packages using pip in the **active** `sai3_env` environment:
+    
+    First, install the FAISS library using conda from the pytorch channel
 
-First, install the FAISS library using conda from the pytorch channel
-conda install -c pytorch faiss-cpu -y
+    ```bash
+    conda install -c pytorch faiss-cpu -y
+    ```
 
-Then, install the other Python packages using pip
+    Then, install the other Python packages using pip
+
     ```bash
     pip install langchain langchain-community sentence-transformers gradio
     ```
-    # 
 
-6.  **(For VS Code Users): Select Python Interpreter**
+7.  **(For VS Code Users): Select Python Interpreter**
     - Open the project folder in VS Code (`File` → `Open Folder...`).
     - Open the `chatbot.py` file.
     - Press `Ctrl+Shift+P` and search for `Python: Select Interpreter`.
