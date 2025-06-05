@@ -1,6 +1,9 @@
 ## Group A
 Luca Lüdi, Colin Marti, Hristian Petrov, Cyril Schlup, Sriprakatheeswaran Thiraviyachelvam
 
+# Disclaimer
+This chatbot project has not been containerized using Docker. Our team used a local Ollama LLM setup, and due to technical constraints, we were unable to successfully create a fully functional Docker environment. Additionally, all team members work exclusively on Windows systems. As a result, Linux and macOS environments are described only theoretically and have not been practically tested.
+
 # SAI3 RAG Chatbot with Ollama
 
 This project implements a Retrieval-Augmented Generation (RAG) chatbot in Python. The chatbot uses a local text file as its knowledge base and answers questions using a locally running language model via Ollama.
