@@ -42,13 +42,13 @@ Before you begin, ensure the following software is installed on your system:
     cd SAI3-Chatbot
     ```
 
-3.  **Prepare Data:**
+2.  **Prepare Data:**
 
     - Ensure your text file, serving as the knowledge base, is located in this project folder.
     - Make sure the file is named `Mahabharata_Gita_Light_Edition.txt`.
     - The file should be in `UTF-8` encoding.
 
-4.  **Create and Activate Conda Environment:**
+3.  **Create and Activate Conda Environment:**
     Create a dedicated Conda environment for this project (we'll call it `sai3_env`) and activate it:
 
     ```bash
@@ -62,7 +62,7 @@ Before you begin, ensure the following software is installed on your system:
     Your terminal prompt should now show `(sai3_env)` at the beginning.
     *(Note: On macOS/Linux, this happens in the standard terminal; on Windows, in the Anaconda Powershell Prompt or CMD, after Anaconda has been added to the PATH or `conda init` has been run.)*
 
-5.  **Install Dependencies:**
+4.  **Install Dependencies:**
     Install all necessary Python packages using pip in the **active** `sai3_env` environment:
     
     First, install the FAISS library using conda from the pytorch channel
@@ -77,7 +77,7 @@ Before you begin, ensure the following software is installed on your system:
     pip install langchain langchain-community sentence-transformers gradio
     ```
 
-7.  **(For VS Code Users): Select Python Interpreter**
+5.  **(Only for VS Code Users if there are import problems within the files): Select Python Interpreter**
     - Open the project folder in VS Code (`File` → `Open Folder...`).
     - Open the `chatbot.py` file.
     - Press `Ctrl+Shift+P` and search for `Python: Select Interpreter`.
