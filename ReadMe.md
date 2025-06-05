@@ -30,7 +30,7 @@ Before you begin, ensure the following software is installed on your system:
 ## Setup Instructions
 
 1.  **Clone Repository:**
-    Open a **Terminal** (on macOS/Linux) or the **Anaconda Powershell Prompt / CMD** (on Windows) and clone this repository:
+    Open a **Terminal** (on macOS/Linux) or the **Anaconda Powershell Prompt** (on Windows) and clone this repository:
 
     ```bash
     git clone https://github.com/Colin5734/SAI3-Chatbot.git
